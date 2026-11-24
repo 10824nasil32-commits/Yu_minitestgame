@@ -125,9 +125,9 @@
     .progress-bar-bg {
       position: relative;
       height: 20px;
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(15, 23, 42, 0.72);
       border-radius: 999px;
-      border: 1.5px solid rgba(255, 255, 255, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.65);
       padding: 2px;
       overflow: hidden;
     }
@@ -186,15 +186,16 @@
       border: 1.5px solid #93c5fd;
     }
 
-    #fever-toast {
+    #boost-toast {
       display: none;
-      background: linear-gradient(90deg, #b45309, #f59e0b);
-      padding: 4px 12px;
+      background: linear-gradient(90deg, #ea580c, #f59e0b);
+      border: 1.5px solid #fef08a;
+      padding: 4px 14px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 900;
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.65);
     }
 
     /* 하단 터치 컨트롤 */
@@ -248,7 +249,7 @@
     .modal-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(11, 19, 43, 0.84);
+      background: rgba(11, 19, 43, 0.85);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -519,8 +520,8 @@
 
         <div class="toast-area">
           <div class="toast" id="grade-toast">🎓 300m 돌파! D학점 달성!</div>
-          <div class="toast" id="landmark-toast">🎭 천마아트센터 통과!</div>
-          <div id="fever-toast">☕ 아이스 아메리카노 무적 질주!</div>
+          <div class="toast" id="landmark-toast">🏛️ 영남대 정문 통과!</div>
+          <div id="boost-toast">⚡ 카페인 속도 UP! (3.5초)</div>
         </div>
       </div>
 
@@ -534,7 +535,7 @@
       <!-- 시작 화면 모달 -->
       <div class="modal-overlay" id="start-modal">
         <div class="modal-card">
-          <div class="yu-tag">YEUNGNAM UNIV · 3KM MARATHON</div>
+          <div class="yu-tag">YEUNGNAM UNIV · 3KM SPRINT</div>
           <h1 class="modal-title">영남대 S학점 사수 대작전:<br>총장님을 찾아라!</h1>
           <p class="modal-desc">영남대 20개 캠퍼스 명소를 돌파해 본관 총장실(<strong>3,000m</strong>)에서 전설의 <strong>S학점</strong> 결재를 받아내세요!</p>
 
@@ -552,20 +553,20 @@
 
           <div class="info-grid">
             <div class="info-cell">
-              <strong>🟡 은행 열매 & ⏰ 지각</strong>
-              냄새나는 은행 지뢰와 지각 바리케이드를 회피하세요!
+              <strong>💥 방어 없음! 피격 시 -120m</strong>
+              은행 열매·지각·과제 폭탄·C학점에 닿으면 즉시 거리(-120m)와 체력이 깎입니다!
             </div>
             <div class="info-cell">
-              <strong>💣 과제 폭탄 & 📉 C학점</strong>
-              빠른 템포! 점프와 차선 변경으로 돌파하세요!
+              <strong>☕ 아아 속도 부스트 (3.5초)</strong>
+              달리기 속도가 폭발적으로 빨라집니다! 방어는 없으니 끝까지 피하세요!
             </div>
             <div class="info-cell">
-              <strong>🚌 순환셔틀버스</strong>
-              차체가 높아 점프 불가! 좌우 차선으로 피하세요!
+              <strong>💬 총장님 카톡 '1' 사라짐</strong>
+              획득 즉시 앞으로 <strong>+150m 순간질주</strong> 워프합니다!
             </div>
             <div class="info-cell">
-              <strong>☕ 아아 & 💬 카톡 '1'</strong>
-              3.5초 무적 질주 + 총장님 읽음 시 +150m 워프!
+              <strong>📱 조작 방법</strong>
+              좌우 스와이프/버튼으로 이동, 위로 스와이프/점프 버튼으로 회피!
             </div>
           </div>
 
@@ -622,7 +623,7 @@
       'use strict';
 
       // ==========================================
-      // 1. 안전한 Web Audio 효과음 엔진 (사파리 차단 방어)
+      // 1. Web Audio 효과음 엔진 (외부 의존성 없음)
       // ==========================================
       var audioCtx = null;
       var isMuted = false;
@@ -659,9 +660,7 @@
           gain.connect(audioCtx.destination);
           osc.start(now);
           osc.stop(now + duration);
-        } catch (e) {
-          // 오디오 오류 무시하여 게임 진행 보장
-        }
+        } catch (e) {}
       }
 
       function playSfx(name) {
@@ -671,12 +670,12 @@
           playTone(340, 480, 0.07, 'sine', 0.08);
         } else if (name === 'jump') {
           playTone(280, 620, 0.14, 'triangle', 0.11);
-        } else if (name === 'item') {
-          playTone(580, 960, 0.16, 'sine', 0.12);
+        } else if (name === 'boost') {
+          playTone(520, 980, 0.18, 'sine', 0.13);
         } else if (name === 'warp') {
-          playTone(440, 1250, 0.25, 'triangle', 0.13);
+          playTone(440, 1280, 0.25, 'triangle', 0.13);
         } else if (name === 'hit') {
-          playTone(190, 75, 0.22, 'sawtooth', 0.13);
+          playTone(200, 65, 0.26, 'sawtooth', 0.14);
         } else if (name === 'gradeup') {
           playTone(523, 784, 0.15, 'triangle', 0.12);
           setTimeout(function () { playTone(784, 1046, 0.22, 'triangle', 0.12); }, 110);
@@ -688,10 +687,11 @@
       }
 
       // ==========================================
-      // 2. 코스, 학점, 영남대 20개 명소 상수
+      // 2. 코스, 학점, 영남대 20개 건물·명소 상수
       // ==========================================
       var GOAL_DIST = 3000;
-      var RANK_STORAGE_KEY = 'yu_s_grade_run_v1';
+      var PENALTY_DIST = 120;
+      var RANK_STORAGE_KEY = 'yu_s_grade_run_v3_no_shield';
 
       var GRADE_TIERS = [
         { min: 0,    grade: 'F',  cls: 'g-F',  next: 300,  nextG: 'D' },
@@ -715,30 +715,30 @@
       }
 
       var LANDMARKS = [
-        { dist: 140,  name: '천마아트센터', icon: '🎭' },
-        { dist: 280,  name: '홍만이 동상',   icon: '🐴' },
-        { dist: 420,  name: '외국어교육원', icon: '🌐' },
-        { dist: 560,  name: '천마관',       icon: '🏢' },
-        { dist: 700,  name: '거울못',       icon: '🌊' },
-        { dist: 840,  name: '러브로드',     icon: '🌸' },
-        { dist: 980,  name: '민속촌',       icon: '🏯' },
-        { dist: 1120, name: '인문대',       icon: '📖' },
-        { dist: 1260, name: '사회과학대',   icon: '⚖️' },
-        { dist: 1400, name: '사범대',       icon: '🎓' },
-        { dist: 1540, name: '기계관',       icon: '⚙️' },
-        { dist: 1680, name: '자동차관',     icon: '🚗' },
-        { dist: 1820, name: '건설관',       icon: '🏗️' },
-        { dist: 1960, name: '건축관',       icon: '📐' },
-        { dist: 2100, name: '전기관',       icon: '⚡' },
-        { dist: 2240, name: '음대관',       icon: '🎵' },
-        { dist: 2380, name: '미대',         icon: '🎨' },
-        { dist: 2520, name: '생명과학대학', icon: '🧬' },
-        { dist: 2660, name: '학군단',       icon: '🎖️' },
-        { dist: 2800, name: '기숙사',       icon: '🏠' }
+        { dist: 140,  name: '영남대 정문',     icon: '🏛️' },
+        { dist: 280,  name: '천마아트센터',   icon: '🎭' },
+        { dist: 420,  name: '거울못',         icon: '🌊' },
+        { dist: 560,  name: '러브로드',       icon: '🌸' },
+        { dist: 700,  name: '중앙도서관',     icon: '📚' },
+        { dist: 840,  name: '학생지원센터',   icon: '🏢' },
+        { dist: 980,  name: '인문관',         icon: '📖' },
+        { dist: 1120, name: '사회관',         icon: '⚖️' },
+        { dist: 1260, name: '상경관',         icon: '📊' },
+        { dist: 1400, name: '공과대학',       icon: '⚙️' },
+        { dist: 1540, name: '자연과학관',     icon: '🔬' },
+        { dist: 1680, name: '사범대학',       icon: '🎓' },
+        { dist: 1820, name: '약학대학',       icon: '💊' },
+        { dist: 1960, name: '의과대학',       icon: '🩺' },
+        { dist: 2100, name: '생활과학대학',   icon: '🏡' },
+        { dist: 2240, name: '건축학부관',     icon: '📐' },
+        { dist: 2380, name: '법학전문대학원', icon: '📜' },
+        { dist: 2520, name: '노천강당',       icon: '🏟️' },
+        { dist: 2660, name: '영대역 광장',    icon: '🚉' },
+        { dist: 2820, name: '본관 총장실',    icon: '👑' }
       ];
 
       // ==========================================
-      // 3. DOM 및 캔버스 초기화 (최소 300px 보장)
+      // 3. DOM 및 캔버스 초기화
       // ==========================================
       var container = document.getElementById('game-container');
       var canvas = document.getElementById('gameCanvas');
@@ -752,7 +752,7 @@
       var progressText = document.getElementById('progress-bar-text');
       var gradeToast = document.getElementById('grade-toast');
       var landmarkToast = document.getElementById('landmark-toast');
-      var feverToast = document.getElementById('fever-toast');
+      var boostToast = document.getElementById('boost-toast');
       var soundToggle = document.getElementById('sound-toggle');
 
       var startModal = document.getElementById('start-modal');
@@ -778,10 +778,10 @@
       resizeCanvas();
 
       // ==========================================
-      // 4. 게임 상태 및 투영 함수
+      // 4. 게임 상태 및 3D 원근 투영
       // ==========================================
       var game = {
-        state: 'START', // START, PLAYING, RESULT
+        state: 'START',
         distance: 0,
         time: 0,
         hp: 3,
@@ -791,15 +791,17 @@
         jumpY: 0,
         jumpVel: 0,
         isJumping: false,
-        invulnTimer: 0,
-        feverTimer: 0,
+        hitCooldown: 0,
+        boostTimer: 0,
         slipTimer: 0,
+        shakeTimer: 0,
+        hitFlashAlpha: 0,
         warpAlpha: 0,
         roadScroll: 0,
         runCycle: 0,
         spawnTimer: 0.6,
-        nextLandmarkIdx: 0,
         passedLandmarks: 0,
+        landmarkPassedFlags: [],
         currentGrade: 'F',
         gradeToastTimer: 0,
         landmarkToastTimer: 0,
@@ -825,15 +827,16 @@
         return { x: x, y: y, scale: scale };
       }
 
-      function addPopup(text, lane, z, color) {
+      function addPopup(text, lane, z, color, size) {
         var p = project3D(lane, z);
         game.popups.push({
           text: text,
           x: p.x,
-          y: p.y - 45 * p.scale,
-          vy: -55,
+          y: p.y - 48 * p.scale,
+          vy: -62,
           alpha: 1,
-          color: color || '#ffffff'
+          color: color || '#ffffff',
+          size: size || 16
         });
       }
 
@@ -841,15 +844,15 @@
         var p = project3D(lane, z);
         for (var i = 0; i < count; i++) {
           var ang = Math.random() * Math.PI * 2;
-          var spd = 40 + Math.random() * 110;
+          var spd = 45 + Math.random() * 120;
           game.particles.push({
             x: p.x,
             y: p.y - 18 * p.scale,
             vx: Math.cos(ang) * spd,
-            vy: Math.sin(ang) * spd - 40,
-            r: 3 + Math.random() * 3.5,
+            vy: Math.sin(ang) * spd - 45,
+            r: 3 + Math.random() * 3.8,
             color: color,
-            life: 0.45
+            life: 0.48
           });
         }
       }
@@ -880,7 +883,7 @@
         initAudio();
         if (!game.isJumping) {
           game.isJumping = true;
-          game.jumpVel = 680;
+          game.jumpVel = 690;
           playSfx('jump');
           addBurst(game.visualLane, 0.91, '#ffffff', 6);
         }
@@ -948,7 +951,7 @@
       });
 
       // ==========================================
-      // 6. 게임 진행 및 스폰 로직
+      // 6. 게임 진행, 즉시 감점 및 속도 부스트 로직 (방어 기능 없음)
       // ==========================================
       function startGame() {
         resizeCanvas();
@@ -961,13 +964,15 @@
         game.jumpY = 0;
         game.jumpVel = 0;
         game.isJumping = false;
-        game.invulnTimer = 0;
-        game.feverTimer = 0;
+        game.hitCooldown = 0;
+        game.boostTimer = 0;
         game.slipTimer = 0;
+        game.shakeTimer = 0;
+        game.hitFlashAlpha = 0;
         game.warpAlpha = 0;
         game.spawnTimer = 0.55;
-        game.nextLandmarkIdx = 0;
         game.passedLandmarks = 0;
+        game.landmarkPassedFlags = new Array(LANDMARKS.length).fill(false);
         game.currentGrade = 'F';
         game.gradeToastTimer = 0;
         game.landmarkToastTimer = 0;
@@ -983,7 +988,7 @@
         resultModal.classList.add('hidden');
         gradeToast.classList.remove('active');
         landmarkToast.classList.remove('active');
-        feverToast.style.display = 'none';
+        boostToast.style.display = 'none';
         refreshHud();
       }
 
@@ -996,16 +1001,13 @@
           lanes[j] = tmp;
         }
 
-        // 거리가 늘어날수록 2개 레인 장애물 빈도 상승 (최소 1개 레인은 항상 안전)
-        var doubleProb = Math.min(0.65, 0.28 + (game.distance / GOAL_DIST) * 0.37);
+        // 최소 1개 레인은 항상 안전하게 비워둠
+        var doubleProb = Math.min(0.66, 0.28 + (game.distance / GOAL_DIST) * 0.38);
         var count = Math.random() < doubleProb ? 2 : 1;
-        var types = ['GINKGO', 'LATE', 'BOMB', 'C_DROP', 'SHUTTLE'];
+        var types = ['GINKGO', 'LATE', 'BOMB', 'C_DROP'];
 
         for (var k = 0; k < count; k++) {
           var t = types[Math.floor(Math.random() * types.length)];
-          if (k === 1 && t === 'SHUTTLE') {
-            t = Math.random() < 0.5 ? 'GINKGO' : 'LATE';
-          }
           game.obstacles.push({
             lane: lanes[k],
             z: 0.02,
@@ -1014,10 +1016,10 @@
           });
         }
 
-        // 안전 레인에 아이템 배치 (아이스 아메리카노 / 카톡 '1')
-        if (Math.random() < 0.58) {
+        // 안전 레인에 속도/전진 아이템 배치
+        if (Math.random() < 0.62) {
           var safeLane = lanes[count];
-          var itemType = Math.random() < 0.58 ? 'AMERICANO' : 'KAKAO';
+          var itemType = Math.random() < 0.64 ? 'AMERICANO' : 'KAKAO';
           game.items.push({
             lane: safeLane,
             z: 0.02,
@@ -1027,17 +1029,23 @@
         }
       }
 
-      function checkGradePromotion() {
+      function syncGradeState(isPromotion) {
         var g = getGradeData(game.distance);
         if (g.grade !== game.currentGrade) {
           game.currentGrade = g.grade;
-          playSfx('gradeup');
-          gradeToast.textContent = g.grade === 'S'
-            ? '👑 2,400m 돌파! 전설의 S학점 달성!'
-            : '🎓 ' + g.min.toLocaleString() + 'm 돌파! ' + g.grade + '학점 달성!';
+          if (isPromotion) {
+            playSfx('gradeup');
+            gradeToast.textContent = g.grade === 'S'
+              ? '👑 2,400m 돌파! 전설의 S학점 달성!'
+              : '🎓 ' + g.min.toLocaleString() + 'm 돌파! ' + g.grade + '학점 승급!';
+          } else {
+            gradeToast.textContent = '📉 감점으로 ' + g.grade + '학점으로 하락했습니다!';
+          }
           gradeToast.classList.add('active');
-          game.gradeToastTimer = 2.4;
-          addBurst(game.visualLane, 0.88, '#fbbf24', 16);
+          game.gradeToastTimer = 2.3;
+          if (isPromotion) {
+            addBurst(game.visualLane, 0.88, '#fbbf24', 16);
+          }
         }
       }
 
@@ -1048,7 +1056,7 @@
         }
         hudHp.textContent = hearts;
 
-        var d = Math.min(GOAL_DIST, Math.floor(game.distance));
+        var d = Math.min(GOAL_DIST, Math.max(0, Math.floor(game.distance)));
         hudDist.textContent = d.toLocaleString() + 'm / 3,000m';
         hudLandmarkCount.textContent = '🏛️ ' + game.passedLandmarks + '/20';
 
@@ -1056,7 +1064,7 @@
         hudGrade.textContent = g.grade;
         hudGrade.className = 'grade-pill ' + g.cls;
 
-        var pct = Math.min(100, Math.floor((game.distance / GOAL_DIST) * 100));
+        var pct = Math.min(100, Math.floor((d / GOAL_DIST) * 100));
         progressFill.style.width = pct + '%';
         if (g.grade === 'S') {
           progressText.textContent = '👑 S학점 달성! 본관 총장실(3km)까지 ' + (3000 - d).toLocaleString() + 'm!';
@@ -1070,40 +1078,43 @@
 
         game.time += dt;
 
-        // 시작 ~26 m/s에서 3,000m 부근 ~44 m/s까지 경쾌하게 가속
+        // 거리에 비례한 점진적 기본 속도 상승
         var progressRatio = Math.min(1, game.distance / GOAL_DIST);
-        var metersPerSec = 26 + progressRatio * 18;
-        var worldSpeed = 0.56 + progressRatio * 0.34;
+        var metersPerSec = 27 + progressRatio * 20;
+        var worldSpeed = 0.58 + progressRatio * 0.36;
 
-        if (game.feverTimer > 0) {
-          game.feverTimer -= dt;
-          metersPerSec *= 1.4;
-          worldSpeed *= 1.35;
-          feverToast.style.display = 'block';
-          feverToast.textContent = '☕ 카페인 무적 질주! (' + game.feverTimer.toFixed(1) + '초)';
-          if (game.feverTimer <= 0) {
-            game.feverTimer = 0;
-            feverToast.style.display = 'none';
+        // 아이스 아메리카노 속도 부스트 (방어 없이 순수 가속)
+        if (game.boostTimer > 0) {
+          game.boostTimer = Math.max(0, game.boostTimer - dt);
+          metersPerSec *= 1.48;
+          worldSpeed *= 1.38;
+          boostToast.style.display = 'block';
+          boostToast.textContent = '⚡ 카페인 속도 UP! (' + game.boostTimer.toFixed(1) + '초)';
+          if (game.boostTimer <= 0) {
+            boostToast.style.display = 'none';
           }
         }
 
-        if (game.invulnTimer > 0) game.invulnTimer = Math.max(0, game.invulnTimer - dt);
+        if (game.hitCooldown > 0) game.hitCooldown = Math.max(0, game.hitCooldown - dt);
         if (game.slipTimer > 0) game.slipTimer = Math.max(0, game.slipTimer - dt);
+        if (game.shakeTimer > 0) game.shakeTimer = Math.max(0, game.shakeTimer - dt);
+        if (game.hitFlashAlpha > 0) game.hitFlashAlpha = Math.max(0, game.hitFlashAlpha - dt * 2.6);
         if (game.warpAlpha > 0) game.warpAlpha = Math.max(0, game.warpAlpha - dt * 2.5);
 
+        // 거리 전진
         game.distance += metersPerSec * dt;
         game.roadScroll = (game.roadScroll + worldSpeed * 2.4 * dt) % 1;
         game.runCycle += worldSpeed * 24 * dt;
 
-        checkGradePromotion();
+        syncGradeState(true);
 
-        // 부드러운 좌우 레인 전환
+        // 좌우 레인 보간
         game.visualLane += (game.lane - game.visualLane) * Math.min(1, dt * 18);
 
         // 점프 물리
         if (game.isJumping) {
           game.jumpY += game.jumpVel * dt;
-          game.jumpVel -= 2200 * dt;
+          game.jumpVel -= 2250 * dt;
           if (game.jumpY <= 0) {
             game.jumpY = 0;
             game.jumpVel = 0;
@@ -1112,15 +1123,16 @@
         }
 
         // 20개 영남대 명소 이정표 스폰
-        while (game.nextLandmarkIdx < LANDMARKS.length && game.distance >= LANDMARKS[game.nextLandmarkIdx].dist - 25) {
-          var lm = LANDMARKS[game.nextLandmarkIdx];
-          game.signs.push({
-            lm: lm,
-            z: 0.02,
-            side: game.nextLandmarkIdx % 2 === 0 ? -1 : 1,
-            shown: false
-          });
-          game.nextLandmarkIdx++;
+        for (var lIdx = 0; lIdx < LANDMARKS.length; lIdx++) {
+          if (!game.landmarkPassedFlags[lIdx] && game.distance >= LANDMARKS[lIdx].dist - 25) {
+            game.landmarkPassedFlags[lIdx] = true;
+            game.signs.push({
+              lm: LANDMARKS[lIdx],
+              z: 0.02,
+              side: lIdx % 2 === 0 ? -1 : 1,
+              shown: false
+            });
+          }
         }
 
         if (game.gradeToastTimer > 0) {
@@ -1136,7 +1148,7 @@
         game.spawnTimer -= dt;
         if (game.spawnTimer <= 0) {
           spawnRow();
-          game.spawnTimer = Math.max(0.58, 0.92 - progressRatio * 0.32);
+          game.spawnTimer = Math.max(0.56, 0.90 - progressRatio * 0.32);
         }
 
         // 이정표 이동
@@ -1155,45 +1167,46 @@
 
         var playerZ = 0.91;
 
-        // 장애물 충돌 판정
+        // 장애물 이동 및 충돌 판정 (방어 없이 무조건 즉시 -120m 감점 & 체력 감소)
         for (var j = game.obstacles.length - 1; j >= 0; j--) {
           var obs = game.obstacles[j];
           obs.z += worldSpeed * dt;
 
           var zDist = Math.abs(obs.z - playerZ);
           var laneDist = Math.abs(obs.lane - game.visualLane);
-          var jumpedOver = obs.type !== 'SHUTTLE' && game.jumpY > 32;
+          var jumpedOver = game.jumpY > 34;
 
-          if (!obs.hit && zDist < 0.038 && laneDist < 0.35 && !jumpedOver) {
+          if (!obs.hit && zDist < 0.042 && laneDist < 0.36 && !jumpedOver) {
             obs.hit = true;
-            if (game.feverTimer > 0) {
-              playSfx('item');
-              addBurst(obs.lane, obs.z, '#f59e0b', 12);
-              addPopup('💥 카페인 돌파!', obs.lane, obs.z, '#fde047');
-              game.obstacles.splice(j, 1);
-              continue;
-            } else if (game.invulnTimer <= 0) {
+
+            if (game.hitCooldown <= 0) {
               game.hp--;
-              game.invulnTimer = 1.25;
+              game.hitCooldown = 0.6;
+              game.shakeTimer = 0.35;
+              game.hitFlashAlpha = 0.68;
+              game.distance = Math.max(0, game.distance - PENALTY_DIST);
+              syncGradeState(false);
               playSfx('hit');
 
+              var hitLabel = '💥 -120m!';
+              var burstColor = '#ef4444';
               if (obs.type === 'GINKGO') {
                 game.slipTimer = 0.6;
-                addBurst(game.visualLane, playerZ, '#facc15', 14);
-                addPopup('🟡 으악! 은행 열매 지뢰!', game.visualLane, playerZ, '#fef08a');
+                hitLabel = '🟡 은행 밟음! -120m!';
+                burstColor = '#facc15';
               } else if (obs.type === 'LATE') {
-                addBurst(game.visualLane, playerZ, '#ef4444', 14);
-                addPopup('⏰ 지각 출석체크 걸림!', game.visualLane, playerZ, '#fca5a5');
+                hitLabel = '⏰ 지각 체크! -120m!';
+                burstColor = '#ef4444';
               } else if (obs.type === 'BOMB') {
-                addBurst(game.visualLane, playerZ, '#f97316', 14);
-                addPopup('💣 과제 폭탄 폭발!', game.visualLane, playerZ, '#fdba74');
+                hitLabel = '💣 과제 폭탄! -120m!';
+                burstColor = '#f97316';
               } else if (obs.type === 'C_DROP') {
-                addBurst(game.visualLane, playerZ, '#dc2626', 14);
-                addPopup('📉 C학점 투하 직격!', game.visualLane, playerZ, '#fca5a5');
-              } else {
-                addBurst(game.visualLane, playerZ, '#38bdf8', 14);
-                addPopup('🚌 순환셔틀버스 충돌!', game.visualLane, playerZ, '#bae6fd');
+                hitLabel = '📉 C학점 직격! -120m!';
+                burstColor = '#dc2626';
               }
+
+              addBurst(game.visualLane, playerZ, burstColor, 16);
+              addPopup(hitLabel, game.visualLane, playerZ, '#fca5a5', 18);
 
               if (game.hp <= 0) {
                 refreshHud();
@@ -1206,7 +1219,7 @@
           if (obs.z > 1.18) game.obstacles.splice(j, 1);
         }
 
-        // 아이템 획득 판정
+        // 아이템 판정 (방어 없이 순수 속도 상승 / +150m 순간질주)
         for (var m = game.items.length - 1; m >= 0; m--) {
           var it = game.items[m];
           it.z += worldSpeed * dt;
@@ -1214,21 +1227,20 @@
           var izDist = Math.abs(it.z - playerZ);
           var ilaneDist = Math.abs(it.lane - game.visualLane);
 
-          if (!it.done && izDist < 0.055 && ilaneDist < 0.44) {
+          if (!it.done && izDist < 0.056 && ilaneDist < 0.45) {
             it.done = true;
             if (it.type === 'AMERICANO') {
-              playSfx('item');
-              game.feverTimer = 3.5;
-              addBurst(it.lane, it.z, '#f59e0b', 14);
-              addPopup('☕ 3.5초 카페인 피버!', it.lane, it.z, '#fde68a');
+              playSfx('boost');
+              game.boostTimer = 3.5;
+              addBurst(it.lane, it.z, '#fbbf24', 15);
+              addPopup('☕ +속도 UP! (3.5초)', it.lane, it.z, '#fde047', 16);
             } else {
               playSfx('warp');
-              game.distance = Math.min(GOAL_DIST - 30, game.distance + 150);
+              game.distance = Math.min(GOAL_DIST - 20, game.distance + 150);
               game.warpAlpha = 0.85;
-              game.invulnTimer = Math.max(game.invulnTimer, 1.1);
-              checkGradePromotion();
-              addBurst(it.lane, it.z, '#38bdf8', 16);
-              addPopup("💬 총장님 카톡 '1' 사라짐! +150m", it.lane, it.z, '#7dd3fc');
+              syncGradeState(true);
+              addBurst(it.lane, it.z, '#38bdf8', 18);
+              addPopup('💬 +150m 순간질주!', it.lane, it.z, '#bae6fd', 16);
             }
             game.items.splice(m, 1);
             continue;
@@ -1250,7 +1262,7 @@
         for (var u = game.popups.length - 1; u >= 0; u--) {
           var pop = game.popups[u];
           pop.y += pop.vy * dt;
-          pop.alpha -= dt * 1.15;
+          pop.alpha -= dt * 1.1;
           if (pop.alpha <= 0) game.popups.splice(u, 1);
         }
 
@@ -1302,7 +1314,7 @@
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, viewW, horizonY);
 
-        // 영남대 본관 시계탑 실루엣
+        // 영남대 본관 시계탑
         var bScale = 0.45 + (game.distance / GOAL_DIST) * 0.85;
         ctx.save();
         ctx.translate(viewW * 0.5, horizonY);
@@ -1367,7 +1379,6 @@
         ctx.fillStyle = '#334155';
         ctx.fill();
 
-        // 트랙 경계선 (러브로드 구간 벚꽃 핑크 포인트)
         ctx.strokeStyle = atm.accent || '#0072ce';
         ctx.lineWidth = 5;
         ctx.beginPath();
@@ -1377,7 +1388,7 @@
         ctx.lineTo(br.x, br.y);
         ctx.stroke();
 
-        // 레인 구분 점선
+        // 레인 점선
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
         for (var d = 0; d < 10; d++) {
           var zs = (d + game.roadScroll) / 10;
@@ -1392,6 +1403,20 @@
             ctx.lineTo(pb.x, pb.y);
             ctx.stroke();
           });
+        }
+
+        // 속도 부스트 중 화면 양쪽 스피드 라인 효과
+        if (game.boostTimer > 0) {
+          ctx.strokeStyle = 'rgba(254, 240, 138, 0.5)';
+          ctx.lineWidth = 2.5;
+          for (var s = 0; s < 10; s++) {
+            var sx = s < 5 ? 10 + s * 10 : viewW - 10 - (s - 5) * 10;
+            var sy = ((Date.now() * 1.4 + s * 110) % viewH);
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(sx, sy + 55);
+            ctx.stroke();
+          }
         }
       }
 
@@ -1439,9 +1464,9 @@
           ctx.ellipse(0, 18 * sc - bob, 16 * sc, 6 * sc, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.fillStyle = it.type === 'AMERICANO' ? 'rgba(245, 158, 11, 0.35)' : 'rgba(56, 189, 248, 0.38)';
+          ctx.fillStyle = it.type === 'AMERICANO' ? 'rgba(251, 191, 36, 0.42)' : 'rgba(56, 189, 248, 0.38)';
           ctx.beginPath();
-          ctx.arc(0, -8 * sc, 23 * sc, 0, Math.PI * 2);
+          ctx.arc(0, -8 * sc, 24 * sc, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.font = Math.round(30 * sc) + 'px sans-serif';
@@ -1465,7 +1490,7 @@
       function drawObstacles() {
         for (var i = 0; i < game.obstacles.length; i++) {
           var obs = game.obstacles[i];
-          var p = project3D(obs.lane, obs.z);
+          var p = project3D(obs.lane, Math.max(0.01, obs.z));
           var sc = p.scale;
 
           ctx.save();
@@ -1514,7 +1539,7 @@
             ctx.fillText('은행!', 0, -40 * sc);
 
           } else if (obs.type === 'LATE') {
-            // ⏰ 지각 출석체크
+            // ⏰ 지각 출석체크 바리케이드
             ctx.fillStyle = '#475569';
             ctx.fillRect(-23 * sc, -42 * sc, 5 * sc, 42 * sc);
             ctx.fillRect(18 * sc, -42 * sc, 5 * sc, 42 * sc);
@@ -1558,15 +1583,15 @@
             ctx.textBaseline = 'middle';
             ctx.fillText('과제', 0, -r);
 
-          } else if (obs.type === 'C_DROP') {
-            // 📉 C학점 투하
+          } else {
+            // 📉 C학점 투하 (바닥 경고 후 낙하)
             ctx.strokeStyle = 'rgba(220, 38, 38, 0.9)';
             ctx.lineWidth = 3 * sc;
             ctx.beginPath();
             ctx.ellipse(0, 0, 24 * sc, 8 * sc, 0, 0, Math.PI * 2);
             ctx.stroke();
 
-            var dropH = Math.max(0, (0.88 - obs.z) * 140) * sc;
+            var dropH = Math.max(0, (0.88 - obs.z) * 145) * sc;
             var cw = 36 * sc;
             var ch = 44 * sc;
             var cy = -ch - dropH;
@@ -1583,27 +1608,6 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('C', 0, cy + ch * 0.54);
-
-          } else {
-            // 🚌 순환셔틀버스
-            var bw = 60 * sc;
-            var bh = 54 * sc;
-            roundBox(-bw / 2, -bh, bw, bh, 8 * sc);
-            ctx.fillStyle = '#003876';
-            ctx.fill();
-            ctx.lineWidth = 2.5 * sc;
-            ctx.strokeStyle = '#38bdf8';
-            ctx.stroke();
-
-            roundBox(-bw * 0.38, -bh * 0.84, bw * 0.76, bh * 0.38, 5 * sc);
-            ctx.fillStyle = '#bae6fd';
-            ctx.fill();
-
-            ctx.fillStyle = '#fbbf24';
-            ctx.font = '900 ' + Math.round(10 * sc) + 'px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('순환셔틀', 0, -bh * 0.25);
           }
 
           ctx.restore();
@@ -1614,7 +1618,7 @@
         var p = project3D(game.visualLane, 0.91);
         var sc = p.scale;
 
-        if (game.invulnTimer > 0 && game.slipTimer <= 0 && Math.floor(game.invulnTimer * 18) % 2 === 0) {
+        if (game.hitCooldown > 0 && game.slipTimer <= 0 && Math.floor(game.hitCooldown * 22) % 2 === 0) {
           return;
         }
 
@@ -1633,16 +1637,6 @@
           ctx.rotate(Math.sin(game.slipTimer * 28) * 0.45);
         }
         ctx.scale(sc, sc);
-
-        if (game.feverTimer > 0) {
-          ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
-          ctx.beginPath();
-          ctx.arc(0, -38, 44, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = 3;
-          ctx.stroke();
-        }
 
         // 다리
         ctx.fillStyle = '#1e293b';
@@ -1664,7 +1658,7 @@
 
         // 백팩
         roundBox(-13, -53, 26, 22, 6);
-        ctx.fillStyle = '#0072ce';
+        ctx.fillStyle = game.boostTimer > 0 ? '#f59e0b' : '#0072ce';
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
@@ -1705,16 +1699,23 @@
           var pop = game.popups[k];
           ctx.save();
           ctx.globalAlpha = Math.max(0, pop.alpha);
-          ctx.font = '900 15px sans-serif';
+          ctx.font = '900 ' + pop.size + 'px sans-serif';
           ctx.textAlign = 'center';
           ctx.lineWidth = 4;
-          ctx.strokeStyle = 'rgba(15, 23, 42, 0.88)';
+          ctx.strokeStyle = 'rgba(15, 23, 42, 0.9)';
           ctx.strokeText(pop.text, pop.x, pop.y);
           ctx.fillStyle = pop.color;
           ctx.fillText(pop.text, pop.x, pop.y);
           ctx.restore();
         }
 
+        // 감점 피격 붉은 플래시
+        if (game.hitFlashAlpha > 0) {
+          ctx.fillStyle = 'rgba(239, 68, 68, ' + (game.hitFlashAlpha * 0.44) + ')';
+          ctx.fillRect(0, 0, viewW, viewH);
+        }
+
+        // 카톡 워프 하늘색 플래시
         if (game.warpAlpha > 0) {
           ctx.fillStyle = 'rgba(125, 211, 252, ' + (game.warpAlpha * 0.45) + ')';
           ctx.fillRect(0, 0, viewW, viewH);
@@ -1722,7 +1723,7 @@
       }
 
       // ==========================================
-      // 8. 실전 명예의 전당 (더미 데이터 없는 실제 기록 전용)
+      // 8. 실제 플레이어 전용 명예의 전당
       // ==========================================
       function getRealRanks() {
         try {
@@ -1740,7 +1741,7 @@
         var clean = (name || '').trim() || '영대 익명 러너';
         list.push({
           name: clean,
-          dist: Math.min(GOAL_DIST, Math.floor(dist)),
+          dist: Math.min(GOAL_DIST, Math.max(0, Math.floor(dist))),
           time: Number(timeSec.toFixed(1)),
           grade: grade
         });
@@ -1794,7 +1795,7 @@
       function endGame(cleared) {
         game.state = 'RESULT';
         game.cleared = cleared;
-        var finalDist = Math.min(GOAL_DIST, Math.floor(game.distance));
+        var finalDist = Math.min(GOAL_DIST, Math.max(0, Math.floor(game.distance)));
         var finalGrade = cleared ? 'S' : getGradeData(finalDist).grade;
 
         var box = document.getElementById('result-box');
@@ -1811,7 +1812,7 @@
           box.classList.remove('clear');
           document.getElementById('res-tag').textContent = 'YEUNGNAM UNIV GRADE REPORT';
           document.getElementById('res-title').textContent = '주행 종료 · ' + finalGrade + '학점 성적표';
-          document.getElementById('res-desc').textContent = '3,000m 본관 총장실까지 돌파해 S학점 결재에 다시 도전해보세요!';
+          document.getElementById('res-desc').textContent = '장애물 감점을 모두 회피하고 3,000m 본관 총장실까지 다시 도전해보세요!';
           stamp.textContent = '📋 취득 학점: ' + finalGrade + ' (' + finalDist.toLocaleString() + 'm)';
         }
 
@@ -1837,7 +1838,7 @@
       document.getElementById('save-rank-btn').addEventListener('click', function () {
         if (game.rankSaved) return;
         var val = document.getElementById('nickname-input').value;
-        var finalDist = Math.min(GOAL_DIST, Math.floor(game.distance));
+        var finalDist = Math.min(GOAL_DIST, Math.max(0, Math.floor(game.distance)));
         var finalGrade = game.cleared ? 'S' : getGradeData(finalDist).grade;
         addRealRank(val, finalDist, game.time, finalGrade);
         game.rankSaved = true;
@@ -1852,7 +1853,7 @@
       });
 
       // ==========================================
-      // 9. 메인 애니메이션 루프 (즉시 배경 렌더링 포함)
+      // 9. 메인 애니메이션 루프 (화면 흔들림 포함)
       // ==========================================
       var prevTime = 0;
 
@@ -1864,12 +1865,21 @@
         updateGame(dt);
 
         ctx.clearRect(0, 0, viewW, viewH);
+        ctx.save();
+        if (game.shakeTimer > 0) {
+          var mag = (game.shakeTimer / 0.35) * 9;
+          var sx = (Math.random() - 0.5) * 2 * mag;
+          var sy = (Math.random() - 0.5) * 2 * mag;
+          ctx.translate(sx, sy);
+        }
+
         drawScene();
         drawSigns();
         drawItems();
         drawObstacles();
         drawPlayer();
         drawOverlays();
+        ctx.restore();
 
         requestAnimationFrame(loop);
       }
