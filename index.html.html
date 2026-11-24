@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>영남대 S학점 사수 대작전: 총장님을 찾아라!</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
+      overflow: hidden;
+      background-color: #0b132b;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      touch-action: manipulation;
+    }
+
+    #app-shell {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #1c2541 0%, #0b132b 100%);
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      max-width: 560px;
+      height: 100%;
+      min-height: 100dvh;
+      overflow: hidden;
+      background-color: #38bdf8;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.75);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    /* 상단 HUD */
+    #hud {
+      position: absolute;
+      top: max(12px, env(safe-area-inset-top));
+      left: 12px;
+      right: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-box {
+      background: rgba(255, 255, 255, 0.94);
+      color: #0f172a;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 13px;
+      border: 2px solid #003876;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .grade-pill {
+      padding: 2px 9px;
+      border-radius: 999px;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 13px;
+      background: #475569;
+    }
+
+    .g-F  { background: #475569; }
+    .g-D  { background: #ea580c; }
+    .g-Dp { background: #d97706; }
+    .g-C  { background: #ca8a04; }
+    .g-Cp { background: #65a30d; }
+    .g-B  { background: #0d9488; }
+    .g-Bp { background: #0284c7; }
+    .g-A  { background: #2563eb; }
+    .g-Ap { background: #7c3aed; }
+    .g-S  { background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6); }
+
+    #sound-toggle {
+      pointer-events: auto;
+      background: rgba(255, 255, 255, 0.94);
+      border: 2px solid #003876;
+      border-radius: 999px;
+      width: 34px;
+      height: 34px;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .progress-bar-bg {
+      position: relative;
+      height: 20px;
+      background: rgba(15, 23, 42, 0.7);
+      border-radius: 999px;
+      border: 1.5px solid rgba(255, 255, 255, 0.6);
+      padding: 2px;
+      overflow: hidden;
+    }
+
+    #progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #34d399, #fbbf24, #f43f5e);
+      transition: width 0.1s linear;
+    }
+
+    #progress-bar-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    }
+
+    .toast-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .toast {
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 900;
+      color: #ffffff;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    .toast.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #grade-toast {
+      background: linear-gradient(135deg, #f59e0b, #dc2626);
+      border: 1.5px solid #fef08a;
+    }
+
+    #landmark-toast {
+      background: linear-gradient(135deg, #003876, #0072ce);
+      border: 1.5px solid #93c5fd;
+    }
+
+    #fever-toast {
+      display: none;
+      background: linear-gradient(90deg, #b45309, #f59e0b);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+    }
+
+    /* 하단 터치 컨트롤 */
+    #controls {
+      position: absolute;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      left: 12px;
+      right: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1.3fr 1fr;
+      gap: 10px;
+      z-index: 12;
+    }
+
+    .ctrl-btn {
+      height: 60px;
+      border-radius: 16px;
+      border: 3px solid #003876;
+      background: rgba(255, 255, 255, 0.92);
+      color: #003876;
+      font-size: 17px;
+      font-weight: 900;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 0 #003876, 0 8px 16px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .ctrl-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #003876;
+      background: #e0f2fe;
+    }
+
+    .ctrl-jump {
+      background: linear-gradient(180deg, #fde047, #f59e0b);
+      border-color: #78350f;
+      color: #451a03;
+      box-shadow: 0 4px 0 #78350f, 0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .ctrl-jump:active {
+      box-shadow: 0 1px 0 #78350f;
+      background: #fef08a;
+    }
+
+    /* 모달 오버레이 */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(11, 19, 43, 0.84);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 30;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.hidden {
+      display: none !important;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 430px;
+      background: #ffffff;
+      border-radius: 22px;
+      border: 3px solid #003876;
+      padding: 20px 18px;
+      text-align: center;
+      color: #0f172a;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .yu-tag {
+      display: inline-block;
+      background: #003876;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+
+    .modal-title {
+      font-size: 21px;
+      font-weight: 900;
+      color: #003876;
+      line-height: 1.28;
+      margin-bottom: 6px;
+      word-break: keep-all;
+    }
+
+    .modal-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      word-break: keep-all;
+    }
+
+    .grade-guide {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+      background: #f1f5f9;
+      padding: 8px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .grade-guide span {
+      background: #ffffff;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .info-cell {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 11px;
+      padding: 8px;
+      font-size: 11.5px;
+      line-height: 1.35;
+    }
+
+    .info-cell strong {
+      display: block;
+      color: #003876;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #0072ce, #003876);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #00224b;
+    }
+
+    .action-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #00224b;
+    }
+
+    .result-box {
+      background: #f8fafc;
+      border: 2px solid #003876;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 10px 0;
+    }
+
+    .result-box.clear {
+      background: #fffbeb;
+      border-color: #d97706;
+    }
+
+    .stamp-label {
+      display: inline-block;
+      border: 2.5px solid #dc2626;
+      color: #dc2626;
+      font-weight: 900;
+      font-size: 15px;
+      padding: 3px 12px;
+      border-radius: 8px;
+      transform: rotate(-2deg);
+      margin-bottom: 8px;
+      background: #ffffff;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 8px 4px;
+      border: 1px solid #cbd5e1;
+    }
+
+    .stats-grid div span {
+      display: block;
+      font-size: 10.5px;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .stats-grid div strong {
+      font-size: 16px;
+      color: #003876;
+      font-weight: 900;
+    }
+
+    .rank-form {
+      display: flex;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .rank-input {
+      flex: 1;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .rank-input:focus {
+      border-color: #0072ce;
+    }
+
+    .rank-submit {
+      background: #003876;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .hof-box {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 12px;
+      text-align: left;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .hof-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 900;
+      color: #003876;
+      margin-bottom: 6px;
+    }
+
+    .hof-clear {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 10.5px;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .hof-empty {
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+      padding: 12px 4px;
+      line-height: 1.4;
+    }
+
+    .hof-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      padding: 5px 2px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .hof-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="app-shell">
+    <div id="game-container">
+      <canvas id="gameCanvas"></canvas>
+
+      <!-- 상단 HUD -->
+      <div id="hud">
+        <div class="hud-row">
+          <div class="hud-box" id="hud-hp">❤️❤️❤️</div>
+          <div class="hud-box">
+            <span id="hud-dist">0m / 3,000m</span>
+            <span class="grade-pill g-F" id="hud-grade">F</span>
+          </div>
+          <div class="hud-box" id="hud-landmark-count">🏛️ 0/20</div>
+          <button type="button" id="sound-toggle" aria-label="소리 켜기/끄기">🔊</button>
+        </div>
+
+        <div class="progress-bar-bg">
+          <div id="progress-bar-fill"></div>
+          <div id="progress-bar-text">본관 총장실(3km)까지 0% · 다음 학점: 300m (D)</div>
+        </div>
+
+        <div class="toast-area">
+          <div class="toast" id="grade-toast">🎓 300m 돌파! D학점 달성!</div>
+          <div class="toast" id="landmark-toast">🎭 천마아트센터 통과!</div>
+          <div id="fever-toast">☕ 아이스 아메리카노 무적 질주!</div>
+        </div>
+      </div>
+
+      <!-- 하단 터치 버튼 -->
+      <div id="controls">
+        <button type="button" class="ctrl-btn" id="btn-left">◀ 왼쪽</button>
+        <button type="button" class="ctrl-btn ctrl-jump" id="btn-jump">⬆ 점프</button>
+        <button type="button" class="ctrl-btn" id="btn-right">▶ 오른쪽</button>
+      </div>
+
+      <!-- 시작 화면 모달 -->
+      <div class="modal-overlay" id="start-modal">
+        <div class="modal-card">
+          <div class="yu-tag">YEUNGNAM UNIV · 3KM MARATHON</div>
+          <h1 class="modal-title">영남대 S학점 사수 대작전:<br>총장님을 찾아라!</h1>
+          <p class="modal-desc">영남대 20개 캠퍼스 명소를 돌파해 본관 총장실(<strong>3,000m</strong>)에서 전설의 <strong>S학점</strong> 결재를 받아내세요!</p>
+
+          <div class="grade-guide">
+            <span>300m <b>D</b></span>
+            <span>450m <b>D+</b></span>
+            <span>900m <b>C</b></span>
+            <span>1050m <b>C+</b></span>
+            <span>1500m <b>B</b></span>
+            <span>1650m <b>B+</b></span>
+            <span>2100m <b>A</b></span>
+            <span>2250m <b>A+</b></span>
+            <span style="background:#fef3c7;border-color:#f59e0b;color:#b45309;">2400m~3km <b>S</b></span>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-cell">
+              <strong>🟡 은행 열매 & ⏰ 지각</strong>
+              냄새나는 은행 지뢰와 지각 바리케이드를 회피하세요!
+            </div>
+            <div class="info-cell">
+              <strong>💣 과제 폭탄 & 📉 C학점</strong>
+              빠른 템포! 점프와 차선 변경으로 돌파하세요!
+            </div>
+            <div class="info-cell">
+              <strong>🚌 순환셔틀버스</strong>
+              차체가 높아 점프 불가! 좌우 차선으로 피하세요!
+            </div>
+            <div class="info-cell">
+              <strong>☕ 아아 & 💬 카톡 '1'</strong>
+              3.5초 무적 질주 + 총장님 읽음 시 +150m 워프!
+            </div>
+          </div>
+
+          <button type="button" class="action-btn" id="start-btn">🏃‍♂️ 3km 캠퍼스 질주 시작!</button>
+        </div>
+      </div>
+
+      <!-- 결과 화면 모달 -->
+      <div class="modal-overlay hidden" id="result-modal">
+        <div class="modal-card">
+          <div class="yu-tag" id="res-tag">YEUNGNAM UNIV REPORT</div>
+          <h2 class="modal-title" id="res-title">3km 완주! S학점 결재 완료!</h2>
+          <p class="modal-desc" id="res-desc">본관 총장실에서 총장님과 극적 상봉에 성공했습니다!</p>
+
+          <div class="result-box" id="result-box">
+            <div class="stamp-label" id="res-stamp">✅ 최종 S학점 확정 결재</div>
+            <div class="stats-grid">
+              <div>
+                <span>최종 학점</span>
+                <strong id="res-grade">S</strong>
+              </div>
+              <div>
+                <span>달린 거리</span>
+                <strong id="res-dist">3,000m</strong>
+              </div>
+              <div>
+                <span>주행 시간</span>
+                <strong id="res-time">0.0초</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="rank-form" id="rank-form">
+            <input type="text" class="rank-input" id="nickname-input" maxlength="14" placeholder="학과/닉네임 입력 후 기록 등록" />
+            <button type="button" class="rank-submit" id="save-rank-btn">등록</button>
+          </div>
+
+          <div class="hof-box">
+            <div class="hof-header">
+              <span>🏆 영남대 실전 S학점 명예의 전당</span>
+              <button type="button" class="hof-clear" id="clear-rank-btn">초기화</button>
+            </div>
+            <div id="hof-list"></div>
+          </div>
+
+          <button type="button" class="action-btn" id="restart-btn">🔄 다시 도전하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      // ==========================================
+      // 1. 안전한 Web Audio 효과음 엔진 (사파리 차단 방어)
+      // ==========================================
+      var audioCtx = null;
+      var isMuted = false;
+
+      function initAudio() {
+        try {
+          var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          if (!audioCtx) {
+            audioCtx = new AudioContextClass();
+          }
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+        } catch (e) {
+          audioCtx = null;
+        }
+      }
+
+      function playTone(freq, endFreq, duration, type, vol) {
+        if (isMuted || !audioCtx) return;
+        try {
+          var now = audioCtx.currentTime;
+          var osc = audioCtx.createOscillator();
+          var gain = audioCtx.createGain();
+          osc.type = type || 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          if (endFreq && endFreq !== freq) {
+            osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+          }
+          gain.gain.setValueAtTime(vol || 0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + duration);
+        } catch (e) {
+          // 오디오 오류 무시하여 게임 진행 보장
+        }
+      }
+
+      function playSfx(name) {
+        if (isMuted) return;
+        initAudio();
+        if (name === 'move') {
+          playTone(340, 480, 0.07, 'sine', 0.08);
+        } else if (name === 'jump') {
+          playTone(280, 620, 0.14, 'triangle', 0.11);
+        } else if (name === 'item') {
+          playTone(580, 960, 0.16, 'sine', 0.12);
+        } else if (name === 'warp') {
+          playTone(440, 1250, 0.25, 'triangle', 0.13);
+        } else if (name === 'hit') {
+          playTone(190, 75, 0.22, 'sawtooth', 0.13);
+        } else if (name === 'gradeup') {
+          playTone(523, 784, 0.15, 'triangle', 0.12);
+          setTimeout(function () { playTone(784, 1046, 0.22, 'triangle', 0.12); }, 110);
+        } else if (name === 'clear') {
+          playTone(523, 659, 0.16, 'triangle', 0.13);
+          setTimeout(function () { playTone(659, 784, 0.16, 'triangle', 0.13); }, 130);
+          setTimeout(function () { playTone(784, 1046, 0.35, 'triangle', 0.14); }, 260);
+        }
+      }
+
+      // ==========================================
+      // 2. 코스, 학점, 영남대 20개 명소 상수
+      // ==========================================
+      var GOAL_DIST = 3000;
+      var RANK_STORAGE_KEY = 'yu_s_grade_run_v1';
+
+      var GRADE_TIERS = [
+        { min: 0,    grade: 'F',  cls: 'g-F',  next: 300,  nextG: 'D' },
+        { min: 300,  grade: 'D',  cls: 'g-D',  next: 450,  nextG: 'D+' },
+        { min: 450,  grade: 'D+', cls: 'g-Dp', next: 900,  nextG: 'C' },
+        { min: 900,  grade: 'C',  cls: 'g-C',  next: 1050, nextG: 'C+' },
+        { min: 1050, grade: 'C+', cls: 'g-Cp', next: 1500, nextG: 'B' },
+        { min: 1500, grade: 'B',  cls: 'g-B',  next: 1650, nextG: 'B+' },
+        { min: 1650, grade: 'B+', cls: 'g-Bp', next: 2100, nextG: 'A' },
+        { min: 2100, grade: 'A',  cls: 'g-A',  next: 2250, nextG: 'A+' },
+        { min: 2250, grade: 'A+', cls: 'g-Ap', next: 2400, nextG: 'S' },
+        { min: 2400, grade: 'S',  cls: 'g-S',  next: 3000, nextG: '3km 완주' }
+      ];
+
+      function getGradeData(dist) {
+        var res = GRADE_TIERS[0];
+        for (var i = 0; i < GRADE_TIERS.length; i++) {
+          if (dist >= GRADE_TIERS[i].min) res = GRADE_TIERS[i];
+        }
+        return res;
+      }
+
+      var LANDMARKS = [
+        { dist: 140,  name: '천마아트센터', icon: '🎭' },
+        { dist: 280,  name: '홍만이 동상',   icon: '🐴' },
+        { dist: 420,  name: '외국어교육원', icon: '🌐' },
+        { dist: 560,  name: '천마관',       icon: '🏢' },
+        { dist: 700,  name: '거울못',       icon: '🌊' },
+        { dist: 840,  name: '러브로드',     icon: '🌸' },
+        { dist: 980,  name: '민속촌',       icon: '🏯' },
+        { dist: 1120, name: '인문대',       icon: '📖' },
+        { dist: 1260, name: '사회과학대',   icon: '⚖️' },
+        { dist: 1400, name: '사범대',       icon: '🎓' },
+        { dist: 1540, name: '기계관',       icon: '⚙️' },
+        { dist: 1680, name: '자동차관',     icon: '🚗' },
+        { dist: 1820, name: '건설관',       icon: '🏗️' },
+        { dist: 1960, name: '건축관',       icon: '📐' },
+        { dist: 2100, name: '전기관',       icon: '⚡' },
+        { dist: 2240, name: '음대관',       icon: '🎵' },
+        { dist: 2380, name: '미대',         icon: '🎨' },
+        { dist: 2520, name: '생명과학대학', icon: '🧬' },
+        { dist: 2660, name: '학군단',       icon: '🎖️' },
+        { dist: 2800, name: '기숙사',       icon: '🏠' }
+      ];
+
+      // ==========================================
+      // 3. DOM 및 캔버스 초기화 (최소 300px 보장)
+      // ==========================================
+      var container = document.getElementById('game-container');
+      var canvas = document.getElementById('gameCanvas');
+      var ctx = canvas.getContext('2d');
+
+      var hudHp = document.getElementById('hud-hp');
+      var hudDist = document.getElementById('hud-dist');
+      var hudGrade = document.getElementById('hud-grade');
+      var hudLandmarkCount = document.getElementById('hud-landmark-count');
+      var progressFill = document.getElementById('progress-bar-fill');
+      var progressText = document.getElementById('progress-bar-text');
+      var gradeToast = document.getElementById('grade-toast');
+      var landmarkToast = document.getElementById('landmark-toast');
+      var feverToast = document.getElementById('fever-toast');
+      var soundToggle = document.getElementById('sound-toggle');
+
+      var startModal = document.getElementById('start-modal');
+      var resultModal = document.getElementById('result-modal');
+
+      var viewW = 390;
+      var viewH = 780;
+
+      function resizeCanvas() {
+        var rect = container.getBoundingClientRect();
+        viewW = Math.max(300, rect.width || window.innerWidth || 390);
+        viewH = Math.max(300, rect.height || window.innerHeight || 780);
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.floor(viewW * dpr);
+        canvas.height = Math.floor(viewH * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('orientationchange', function () {
+        setTimeout(resizeCanvas, 100);
+      });
+      resizeCanvas();
+
+      // ==========================================
+      // 4. 게임 상태 및 투영 함수
+      // ==========================================
+      var game = {
+        state: 'START', // START, PLAYING, RESULT
+        distance: 0,
+        time: 0,
+        hp: 3,
+        maxHp: 3,
+        lane: 0,
+        visualLane: 0,
+        jumpY: 0,
+        jumpVel: 0,
+        isJumping: false,
+        invulnTimer: 0,
+        feverTimer: 0,
+        slipTimer: 0,
+        warpAlpha: 0,
+        roadScroll: 0,
+        runCycle: 0,
+        spawnTimer: 0.6,
+        nextLandmarkIdx: 0,
+        passedLandmarks: 0,
+        currentGrade: 'F',
+        gradeToastTimer: 0,
+        landmarkToastTimer: 0,
+        cleared: false,
+        rankSaved: false,
+        obstacles: [],
+        items: [],
+        signs: [],
+        particles: [],
+        popups: []
+      };
+
+      function project3D(lane, z) {
+        var horizonY = viewH * 0.28;
+        var bottomY = viewH * 0.82;
+        var t = Math.pow(Math.max(0, z), 1.35);
+        var y = horizonY + (bottomY - horizonY) * t;
+        var halfTop = viewW * 0.085;
+        var halfBot = viewW * 0.46;
+        var roadHalf = halfTop + (halfBot - halfTop) * t;
+        var x = viewW * 0.5 + lane * (roadHalf * 0.64);
+        var scale = 0.22 + 0.88 * t;
+        return { x: x, y: y, scale: scale };
+      }
+
+      function addPopup(text, lane, z, color) {
+        var p = project3D(lane, z);
+        game.popups.push({
+          text: text,
+          x: p.x,
+          y: p.y - 45 * p.scale,
+          vy: -55,
+          alpha: 1,
+          color: color || '#ffffff'
+        });
+      }
+
+      function addBurst(lane, z, color, count) {
+        var p = project3D(lane, z);
+        for (var i = 0; i < count; i++) {
+          var ang = Math.random() * Math.PI * 2;
+          var spd = 40 + Math.random() * 110;
+          game.particles.push({
+            x: p.x,
+            y: p.y - 18 * p.scale,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd - 40,
+            r: 3 + Math.random() * 3.5,
+            color: color,
+            life: 0.45
+          });
+        }
+      }
+
+      // ==========================================
+      // 5. 입력 제어 (터치 버튼, 스와이프, 키보드)
+      // ==========================================
+      function goLeft() {
+        if (game.state !== 'PLAYING') return;
+        initAudio();
+        if (game.lane > -1) {
+          game.lane--;
+          playSfx('move');
+        }
+      }
+
+      function goRight() {
+        if (game.state !== 'PLAYING') return;
+        initAudio();
+        if (game.lane < 1) {
+          game.lane++;
+          playSfx('move');
+        }
+      }
+
+      function doJump() {
+        if (game.state !== 'PLAYING') return;
+        initAudio();
+        if (!game.isJumping) {
+          game.isJumping = true;
+          game.jumpVel = 680;
+          playSfx('jump');
+          addBurst(game.visualLane, 0.91, '#ffffff', 6);
+        }
+      }
+
+      function bindPress(el, fn) {
+        el.addEventListener('touchstart', function (e) {
+          e.preventDefault();
+          fn();
+        }, { passive: false });
+        el.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          fn();
+        });
+      }
+
+      bindPress(document.getElementById('btn-left'), goLeft);
+      bindPress(document.getElementById('btn-right'), goRight);
+      bindPress(document.getElementById('btn-jump'), doJump);
+
+      var touchX0 = 0;
+      var touchY0 = 0;
+      canvas.addEventListener('touchstart', function (e) {
+        initAudio();
+        if (e.touches && e.touches.length > 0) {
+          touchX0 = e.touches[0].clientX;
+          touchY0 = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchend', function (e) {
+        if (game.state !== 'PLAYING' || !e.changedTouches || e.changedTouches.length === 0) return;
+        var dx = e.changedTouches[0].clientX - touchX0;
+        var dy = e.changedTouches[0].clientY - touchY0;
+        if (Math.abs(dx) < 20 && Math.abs(dy) < 20) {
+          doJump();
+          return;
+        }
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0) goLeft();
+          else goRight();
+        } else if (dy < -18) {
+          doJump();
+        }
+      }, { passive: true });
+
+      window.addEventListener('keydown', function (e) {
+        if (game.state !== 'PLAYING') return;
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          goLeft();
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          e.preventDefault();
+          goRight();
+        } else if (e.key === 'ArrowUp' || e.key === ' ' || e.key === 'w' || e.key === 'W') {
+          e.preventDefault();
+          doJump();
+        }
+      });
+
+      soundToggle.addEventListener('click', function () {
+        initAudio();
+        isMuted = !isMuted;
+        soundToggle.textContent = isMuted ? '🔇' : '🔊';
+      });
+
+      // ==========================================
+      // 6. 게임 진행 및 스폰 로직
+      // ==========================================
+      function startGame() {
+        resizeCanvas();
+        game.state = 'PLAYING';
+        game.distance = 0;
+        game.time = 0;
+        game.hp = 3;
+        game.lane = 0;
+        game.visualLane = 0;
+        game.jumpY = 0;
+        game.jumpVel = 0;
+        game.isJumping = false;
+        game.invulnTimer = 0;
+        game.feverTimer = 0;
+        game.slipTimer = 0;
+        game.warpAlpha = 0;
+        game.spawnTimer = 0.55;
+        game.nextLandmarkIdx = 0;
+        game.passedLandmarks = 0;
+        game.currentGrade = 'F';
+        game.gradeToastTimer = 0;
+        game.landmarkToastTimer = 0;
+        game.cleared = false;
+        game.rankSaved = false;
+        game.obstacles = [];
+        game.items = [];
+        game.signs = [];
+        game.particles = [];
+        game.popups = [];
+
+        startModal.classList.add('hidden');
+        resultModal.classList.add('hidden');
+        gradeToast.classList.remove('active');
+        landmarkToast.classList.remove('active');
+        feverToast.style.display = 'none';
+        refreshHud();
+      }
+
+      function spawnRow() {
+        var lanes = [-1, 0, 1];
+        for (var i = lanes.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = lanes[i];
+          lanes[i] = lanes[j];
+          lanes[j] = tmp;
+        }
+
+        // 거리가 늘어날수록 2개 레인 장애물 빈도 상승 (최소 1개 레인은 항상 안전)
+        var doubleProb = Math.min(0.65, 0.28 + (game.distance / GOAL_DIST) * 0.37);
+        var count = Math.random() < doubleProb ? 2 : 1;
+        var types = ['GINKGO', 'LATE', 'BOMB', 'C_DROP', 'SHUTTLE'];
+
+        for (var k = 0; k < count; k++) {
+          var t = types[Math.floor(Math.random() * types.length)];
+          if (k === 1 && t === 'SHUTTLE') {
+            t = Math.random() < 0.5 ? 'GINKGO' : 'LATE';
+          }
+          game.obstacles.push({
+            lane: lanes[k],
+            z: 0.02,
+            type: t,
+            hit: false
+          });
+        }
+
+        // 안전 레인에 아이템 배치 (아이스 아메리카노 / 카톡 '1')
+        if (Math.random() < 0.58) {
+          var safeLane = lanes[count];
+          var itemType = Math.random() < 0.58 ? 'AMERICANO' : 'KAKAO';
+          game.items.push({
+            lane: safeLane,
+            z: 0.02,
+            type: itemType,
+            done: false
+          });
+        }
+      }
+
+      function checkGradePromotion() {
+        var g = getGradeData(game.distance);
+        if (g.grade !== game.currentGrade) {
+          game.currentGrade = g.grade;
+          playSfx('gradeup');
+          gradeToast.textContent = g.grade === 'S'
+            ? '👑 2,400m 돌파! 전설의 S학점 달성!'
+            : '🎓 ' + g.min.toLocaleString() + 'm 돌파! ' + g.grade + '학점 달성!';
+          gradeToast.classList.add('active');
+          game.gradeToastTimer = 2.4;
+          addBurst(game.visualLane, 0.88, '#fbbf24', 16);
+        }
+      }
+
+      function refreshHud() {
+        var hearts = '';
+        for (var i = 0; i < game.maxHp; i++) {
+          hearts += i < game.hp ? '❤️' : '🤍';
+        }
+        hudHp.textContent = hearts;
+
+        var d = Math.min(GOAL_DIST, Math.floor(game.distance));
+        hudDist.textContent = d.toLocaleString() + 'm / 3,000m';
+        hudLandmarkCount.textContent = '🏛️ ' + game.passedLandmarks + '/20';
+
+        var g = getGradeData(game.distance);
+        hudGrade.textContent = g.grade;
+        hudGrade.className = 'grade-pill ' + g.cls;
+
+        var pct = Math.min(100, Math.floor((game.distance / GOAL_DIST) * 100));
+        progressFill.style.width = pct + '%';
+        if (g.grade === 'S') {
+          progressText.textContent = '👑 S학점 달성! 본관 총장실(3km)까지 ' + (3000 - d).toLocaleString() + 'm!';
+        } else {
+          progressText.textContent = '진행 ' + pct + '% · 다음 학점: ' + g.next.toLocaleString() + 'm (' + g.nextG + ')';
+        }
+      }
+
+      function updateGame(dt) {
+        if (game.state !== 'PLAYING') return;
+
+        game.time += dt;
+
+        // 시작 ~26 m/s에서 3,000m 부근 ~44 m/s까지 경쾌하게 가속
+        var progressRatio = Math.min(1, game.distance / GOAL_DIST);
+        var metersPerSec = 26 + progressRatio * 18;
+        var worldSpeed = 0.56 + progressRatio * 0.34;
+
+        if (game.feverTimer > 0) {
+          game.feverTimer -= dt;
+          metersPerSec *= 1.4;
+          worldSpeed *= 1.35;
+          feverToast.style.display = 'block';
+          feverToast.textContent = '☕ 카페인 무적 질주! (' + game.feverTimer.toFixed(1) + '초)';
+          if (game.feverTimer <= 0) {
+            game.feverTimer = 0;
+            feverToast.style.display = 'none';
+          }
+        }
+
+        if (game.invulnTimer > 0) game.invulnTimer = Math.max(0, game.invulnTimer - dt);
+        if (game.slipTimer > 0) game.slipTimer = Math.max(0, game.slipTimer - dt);
+        if (game.warpAlpha > 0) game.warpAlpha = Math.max(0, game.warpAlpha - dt * 2.5);
+
+        game.distance += metersPerSec * dt;
+        game.roadScroll = (game.roadScroll + worldSpeed * 2.4 * dt) % 1;
+        game.runCycle += worldSpeed * 24 * dt;
+
+        checkGradePromotion();
+
+        // 부드러운 좌우 레인 전환
+        game.visualLane += (game.lane - game.visualLane) * Math.min(1, dt * 18);
+
+        // 점프 물리
+        if (game.isJumping) {
+          game.jumpY += game.jumpVel * dt;
+          game.jumpVel -= 2200 * dt;
+          if (game.jumpY <= 0) {
+            game.jumpY = 0;
+            game.jumpVel = 0;
+            game.isJumping = false;
+          }
+        }
+
+        // 20개 영남대 명소 이정표 스폰
+        while (game.nextLandmarkIdx < LANDMARKS.length && game.distance >= LANDMARKS[game.nextLandmarkIdx].dist - 25) {
+          var lm = LANDMARKS[game.nextLandmarkIdx];
+          game.signs.push({
+            lm: lm,
+            z: 0.02,
+            side: game.nextLandmarkIdx % 2 === 0 ? -1 : 1,
+            shown: false
+          });
+          game.nextLandmarkIdx++;
+        }
+
+        if (game.gradeToastTimer > 0) {
+          game.gradeToastTimer -= dt;
+          if (game.gradeToastTimer <= 0) gradeToast.classList.remove('active');
+        }
+        if (game.landmarkToastTimer > 0) {
+          game.landmarkToastTimer -= dt;
+          if (game.landmarkToastTimer <= 0) landmarkToast.classList.remove('active');
+        }
+
+        // 장애물 웨이브 스폰
+        game.spawnTimer -= dt;
+        if (game.spawnTimer <= 0) {
+          spawnRow();
+          game.spawnTimer = Math.max(0.58, 0.92 - progressRatio * 0.32);
+        }
+
+        // 이정표 이동
+        for (var i = game.signs.length - 1; i >= 0; i--) {
+          var s = game.signs[i];
+          s.z += worldSpeed * dt;
+          if (!s.shown && s.z >= 0.78) {
+            s.shown = true;
+            game.passedLandmarks = Math.min(20, game.passedLandmarks + 1);
+            landmarkToast.textContent = s.lm.icon + ' ' + s.lm.name + ' 통과! (' + game.passedLandmarks + '/20)';
+            landmarkToast.classList.add('active');
+            game.landmarkToastTimer = 1.8;
+          }
+          if (s.z > 1.2) game.signs.splice(i, 1);
+        }
+
+        var playerZ = 0.91;
+
+        // 장애물 충돌 판정
+        for (var j = game.obstacles.length - 1; j >= 0; j--) {
+          var obs = game.obstacles[j];
+          obs.z += worldSpeed * dt;
+
+          var zDist = Math.abs(obs.z - playerZ);
+          var laneDist = Math.abs(obs.lane - game.visualLane);
+          var jumpedOver = obs.type !== 'SHUTTLE' && game.jumpY > 32;
+
+          if (!obs.hit && zDist < 0.038 && laneDist < 0.35 && !jumpedOver) {
+            obs.hit = true;
+            if (game.feverTimer > 0) {
+              playSfx('item');
+              addBurst(obs.lane, obs.z, '#f59e0b', 12);
+              addPopup('💥 카페인 돌파!', obs.lane, obs.z, '#fde047');
+              game.obstacles.splice(j, 1);
+              continue;
+            } else if (game.invulnTimer <= 0) {
+              game.hp--;
+              game.invulnTimer = 1.25;
+              playSfx('hit');
+
+              if (obs.type === 'GINKGO') {
+                game.slipTimer = 0.6;
+                addBurst(game.visualLane, playerZ, '#facc15', 14);
+                addPopup('🟡 으악! 은행 열매 지뢰!', game.visualLane, playerZ, '#fef08a');
+              } else if (obs.type === 'LATE') {
+                addBurst(game.visualLane, playerZ, '#ef4444', 14);
+                addPopup('⏰ 지각 출석체크 걸림!', game.visualLane, playerZ, '#fca5a5');
+              } else if (obs.type === 'BOMB') {
+                addBurst(game.visualLane, playerZ, '#f97316', 14);
+                addPopup('💣 과제 폭탄 폭발!', game.visualLane, playerZ, '#fdba74');
+              } else if (obs.type === 'C_DROP') {
+                addBurst(game.visualLane, playerZ, '#dc2626', 14);
+                addPopup('📉 C학점 투하 직격!', game.visualLane, playerZ, '#fca5a5');
+              } else {
+                addBurst(game.visualLane, playerZ, '#38bdf8', 14);
+                addPopup('🚌 순환셔틀버스 충돌!', game.visualLane, playerZ, '#bae6fd');
+              }
+
+              if (game.hp <= 0) {
+                refreshHud();
+                endGame(false);
+                return;
+              }
+            }
+          }
+
+          if (obs.z > 1.18) game.obstacles.splice(j, 1);
+        }
+
+        // 아이템 획득 판정
+        for (var m = game.items.length - 1; m >= 0; m--) {
+          var it = game.items[m];
+          it.z += worldSpeed * dt;
+
+          var izDist = Math.abs(it.z - playerZ);
+          var ilaneDist = Math.abs(it.lane - game.visualLane);
+
+          if (!it.done && izDist < 0.055 && ilaneDist < 0.44) {
+            it.done = true;
+            if (it.type === 'AMERICANO') {
+              playSfx('item');
+              game.feverTimer = 3.5;
+              addBurst(it.lane, it.z, '#f59e0b', 14);
+              addPopup('☕ 3.5초 카페인 피버!', it.lane, it.z, '#fde68a');
+            } else {
+              playSfx('warp');
+              game.distance = Math.min(GOAL_DIST - 30, game.distance + 150);
+              game.warpAlpha = 0.85;
+              game.invulnTimer = Math.max(game.invulnTimer, 1.1);
+              checkGradePromotion();
+              addBurst(it.lane, it.z, '#38bdf8', 16);
+              addPopup("💬 총장님 카톡 '1' 사라짐! +150m", it.lane, it.z, '#7dd3fc');
+            }
+            game.items.splice(m, 1);
+            continue;
+          }
+
+          if (it.z > 1.18) game.items.splice(m, 1);
+        }
+
+        // 파티클 & 팝업 업데이트
+        for (var p = game.particles.length - 1; p >= 0; p--) {
+          var pt = game.particles[p];
+          pt.x += pt.vx * dt;
+          pt.y += pt.vy * dt;
+          pt.vy += 260 * dt;
+          pt.life -= dt;
+          if (pt.life <= 0) game.particles.splice(p, 1);
+        }
+
+        for (var u = game.popups.length - 1; u >= 0; u--) {
+          var pop = game.popups[u];
+          pop.y += pop.vy * dt;
+          pop.alpha -= dt * 1.15;
+          if (pop.alpha <= 0) game.popups.splice(u, 1);
+        }
+
+        // 3,000m 완주 체크
+        if (game.distance >= GOAL_DIST) {
+          game.distance = GOAL_DIST;
+          game.currentGrade = 'S';
+          refreshHud();
+          endGame(true);
+          return;
+        }
+
+        refreshHud();
+      }
+
+      // ==========================================
+      // 7. 3D 원근 캔버스 렌더링
+      // ==========================================
+      function roundBox(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      function getAtmosphere(dist) {
+        if (dist < 750) {
+          return { sky1: '#0284c7', sky2: '#bae6fd', grass1: '#4ade80', grass2: '#22c55e', accent: null };
+        } else if (dist < 1500) {
+          return { sky1: '#2563eb', sky2: '#fbcfe8', grass1: '#34d399', grass2: '#10b981', accent: '#f472b6' };
+        } else if (dist < 2250) {
+          return { sky1: '#d97706', sky2: '#fde68a', grass1: '#84cc16', grass2: '#65a30d', accent: null };
+        } else {
+          return { sky1: '#1e1b4b', sky2: '#6d28d9', grass1: '#14b8a6', grass2: '#0f766e', accent: '#fbbf24' };
+        }
+      }
+
+      function drawScene() {
+        var atm = getAtmosphere(game.distance);
+        var horizonY = viewH * 0.28;
+
+        // 하늘
+        var skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+        skyGrad.addColorStop(0, atm.sky1);
+        skyGrad.addColorStop(1, atm.sky2);
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, viewW, horizonY);
+
+        // 영남대 본관 시계탑 실루엣
+        var bScale = 0.45 + (game.distance / GOAL_DIST) * 0.85;
+        ctx.save();
+        ctx.translate(viewW * 0.5, horizonY);
+        ctx.scale(bScale, bScale);
+
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(-90, -32, 180, 32);
+        ctx.fillStyle = '#003876';
+        ctx.fillRect(-24, -60, 48, 60);
+
+        ctx.beginPath();
+        ctx.moveTo(-30, -60);
+        ctx.lineTo(0, -78);
+        ctx.lineTo(30, -60);
+        ctx.closePath();
+        ctx.fillStyle = '#f59e0b';
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, -43, 9, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (game.distance >= 2250) {
+          roundBox(-36, -98, 72, 17, 5);
+          ctx.fillStyle = '#dc2626';
+          ctx.fill();
+          ctx.fillStyle = '#fef08a';
+          ctx.font = '900 10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('총장실 3km', 0, -89.5);
+        }
+        ctx.restore();
+
+        // 잔디 지면
+        ctx.fillStyle = atm.grass1;
+        ctx.fillRect(0, horizonY, viewW, viewH - horizonY);
+
+        ctx.fillStyle = atm.grass2;
+        for (var i = 0; i < 8; i++) {
+          var z1 = (i + game.roadScroll) / 8;
+          var z2 = Math.min(1, z1 + 0.06);
+          if (z1 >= 1) continue;
+          var p1 = project3D(0, z1);
+          var p2 = project3D(0, z2);
+          ctx.fillRect(0, p1.y, viewW, p2.y - p1.y);
+        }
+
+        // 3레인 트랙
+        var tl = project3D(-1.55, 0);
+        var tr = project3D(1.55, 0);
+        var br = project3D(1.55, 1.05);
+        var bl = project3D(-1.55, 1.05);
+
+        ctx.beginPath();
+        ctx.moveTo(tl.x, tl.y);
+        ctx.lineTo(tr.x, tr.y);
+        ctx.lineTo(br.x, br.y);
+        ctx.lineTo(bl.x, bl.y);
+        ctx.closePath();
+        ctx.fillStyle = '#334155';
+        ctx.fill();
+
+        // 트랙 경계선 (러브로드 구간 벚꽃 핑크 포인트)
+        ctx.strokeStyle = atm.accent || '#0072ce';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(tl.x, tl.y);
+        ctx.lineTo(bl.x, bl.y);
+        ctx.moveTo(tr.x, tr.y);
+        ctx.lineTo(br.x, br.y);
+        ctx.stroke();
+
+        // 레인 구분 점선
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        for (var d = 0; d < 10; d++) {
+          var zs = (d + game.roadScroll) / 10;
+          var ze = Math.min(1.02, zs + 0.045);
+          if (zs >= 1) continue;
+          [-0.52, 0.52].forEach(function (div) {
+            var pa = project3D(div, zs);
+            var pb = project3D(div, ze);
+            ctx.lineWidth = Math.max(1.5, 4 * pb.scale);
+            ctx.beginPath();
+            ctx.moveTo(pa.x, pa.y);
+            ctx.lineTo(pb.x, pb.y);
+            ctx.stroke();
+          });
+        }
+      }
+
+      function drawSigns() {
+        for (var i = 0; i < game.signs.length; i++) {
+          var s = game.signs[i];
+          var p = project3D(s.side * 1.92, s.z);
+          var sc = p.scale;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.scale(sc, sc);
+
+          ctx.fillStyle = '#cbd5e1';
+          ctx.fillRect(-3, -66, 6, 66);
+
+          roundBox(-54, -94, 108, 32, 8);
+          ctx.fillStyle = '#003876';
+          ctx.fill();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#fbbf24';
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(s.lm.icon + ' ' + s.lm.name, 0, -78);
+          ctx.restore();
+        }
+      }
+
+      function drawItems() {
+        for (var i = 0; i < game.items.length; i++) {
+          var it = game.items[i];
+          var p = project3D(it.lane, it.z);
+          var sc = p.scale;
+          var bob = Math.sin(Date.now() * 0.008 + it.z * 10) * 6 * sc;
+
+          ctx.save();
+          ctx.translate(p.x, p.y - 18 * sc + bob);
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+          ctx.beginPath();
+          ctx.ellipse(0, 18 * sc - bob, 16 * sc, 6 * sc, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = it.type === 'AMERICANO' ? 'rgba(245, 158, 11, 0.35)' : 'rgba(56, 189, 248, 0.38)';
+          ctx.beginPath();
+          ctx.arc(0, -8 * sc, 23 * sc, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.font = Math.round(30 * sc) + 'px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(it.type === 'AMERICANO' ? '☕' : '💬', 0, -8 * sc);
+
+          if (it.type === 'KAKAO') {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(13 * sc, -20 * sc, 9 * sc, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#0f172a';
+            ctx.font = '900 ' + Math.round(11 * sc) + 'px sans-serif';
+            ctx.fillText('1', 13 * sc, -20 * sc);
+          }
+          ctx.restore();
+        }
+      }
+
+      function drawObstacles() {
+        for (var i = 0; i < game.obstacles.length; i++) {
+          var obs = game.obstacles[i];
+          var p = project3D(obs.lane, obs.z);
+          var sc = p.scale;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+
+          if (obs.type === 'GINKGO') {
+            // 🟡 은행 열매 지뢰
+            ctx.fillStyle = 'rgba(132, 204, 22, 0.38)';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 29 * sc, 10 * sc, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            var nuts = [
+              { x: -11, y: -5, r: 8 },
+              { x: 11, y: -4, r: 8 },
+              { x: 0, y: -9, r: 9 },
+              { x: -5, y: 1, r: 7 },
+              { x: 6, y: 2, r: 7 }
+            ];
+            for (var n = 0; n < nuts.length; n++) {
+              ctx.fillStyle = '#facc15';
+              ctx.beginPath();
+              ctx.arc(nuts[n].x * sc, nuts[n].y * sc, nuts[n].r * sc, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.strokeStyle = '#a16207';
+              ctx.lineWidth = 1.5 * sc;
+              ctx.stroke();
+            }
+
+            ctx.strokeStyle = '#a3e635';
+            ctx.lineWidth = 2.5 * sc;
+            [-9, 0, 9].forEach(function (wx) {
+              ctx.beginPath();
+              ctx.moveTo(wx * sc, -16 * sc);
+              ctx.lineTo((wx + 3) * sc, -30 * sc);
+              ctx.stroke();
+            });
+
+            roundBox(-20 * sc, -48 * sc, 40 * sc, 16 * sc, 5 * sc);
+            ctx.fillStyle = '#854d0e';
+            ctx.fill();
+            ctx.fillStyle = '#fef08a';
+            ctx.font = '900 ' + Math.round(10.5 * sc) + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('은행!', 0, -40 * sc);
+
+          } else if (obs.type === 'LATE') {
+            // ⏰ 지각 출석체크
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(-23 * sc, -42 * sc, 5 * sc, 42 * sc);
+            ctx.fillRect(18 * sc, -42 * sc, 5 * sc, 42 * sc);
+
+            roundBox(-28 * sc, -46 * sc, 56 * sc, 28 * sc, 6 * sc);
+            ctx.fillStyle = '#dc2626';
+            ctx.fill();
+            ctx.lineWidth = 2.5 * sc;
+            ctx.strokeStyle = '#fef08a';
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 ' + Math.round(12.5 * sc) + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('⏰ 지각!', 0, -32 * sc);
+
+          } else if (obs.type === 'BOMB') {
+            // 💣 과제 폭탄
+            var r = 20 * sc;
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(0, -r, r, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 3 * sc;
+            ctx.beginPath();
+            ctx.moveTo(0, -r * 2);
+            ctx.lineTo(12 * sc, -r * 2 - 8 * sc);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(12 * sc, -r * 2 - 8 * sc, 5 * sc, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '900 ' + Math.round(12 * sc) + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('과제', 0, -r);
+
+          } else if (obs.type === 'C_DROP') {
+            // 📉 C학점 투하
+            ctx.strokeStyle = 'rgba(220, 38, 38, 0.9)';
+            ctx.lineWidth = 3 * sc;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 24 * sc, 8 * sc, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            var dropH = Math.max(0, (0.88 - obs.z) * 140) * sc;
+            var cw = 36 * sc;
+            var ch = 44 * sc;
+            var cy = -ch - dropH;
+
+            roundBox(-cw / 2, cy, cw, ch, 6 * sc);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.lineWidth = 2.5 * sc;
+            ctx.strokeStyle = '#dc2626';
+            ctx.stroke();
+
+            ctx.fillStyle = '#dc2626';
+            ctx.font = '900 ' + Math.round(23 * sc) + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('C', 0, cy + ch * 0.54);
+
+          } else {
+            // 🚌 순환셔틀버스
+            var bw = 60 * sc;
+            var bh = 54 * sc;
+            roundBox(-bw / 2, -bh, bw, bh, 8 * sc);
+            ctx.fillStyle = '#003876';
+            ctx.fill();
+            ctx.lineWidth = 2.5 * sc;
+            ctx.strokeStyle = '#38bdf8';
+            ctx.stroke();
+
+            roundBox(-bw * 0.38, -bh * 0.84, bw * 0.76, bh * 0.38, 5 * sc);
+            ctx.fillStyle = '#bae6fd';
+            ctx.fill();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '900 ' + Math.round(10 * sc) + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('순환셔틀', 0, -bh * 0.25);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      function drawPlayer() {
+        var p = project3D(game.visualLane, 0.91);
+        var sc = p.scale;
+
+        if (game.invulnTimer > 0 && game.slipTimer <= 0 && Math.floor(game.invulnTimer * 18) % 2 === 0) {
+          return;
+        }
+
+        var shScale = Math.max(0.45, 1 - game.jumpY / 220);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, 24 * sc * shScale, 8 * sc * shScale, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        var bob = game.isJumping ? 0 : Math.abs(Math.sin(game.runCycle)) * 6 * sc;
+        var swing = game.isJumping ? 0.5 : Math.sin(game.runCycle);
+
+        ctx.save();
+        ctx.translate(p.x, p.y - game.jumpY * 0.65 * sc - bob);
+        if (game.slipTimer > 0) {
+          ctx.rotate(Math.sin(game.slipTimer * 28) * 0.45);
+        }
+        ctx.scale(sc, sc);
+
+        if (game.feverTimer > 0) {
+          ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
+          ctx.beginPath();
+          ctx.arc(0, -38, 44, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+
+        // 다리
+        ctx.fillStyle = '#1e293b';
+        roundBox(-13, -24 + swing * 5, 10, 22, 4);
+        ctx.fill();
+        roundBox(3, -24 - swing * 5, 10, 22, 4);
+        ctx.fill();
+
+        // 영남대 과잠
+        roundBox(-17, -56, 34, 34, 9);
+        ctx.fillStyle = '#003876';
+        ctx.fill();
+
+        roundBox(-24, -54, 8, 24, 4);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        roundBox(16, -54, 8, 24, 4);
+        ctx.fill();
+
+        // 백팩
+        roundBox(-13, -53, 26, 22, 6);
+        ctx.fillStyle = '#0072ce';
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('YU', 0, -42);
+
+        // 머리 & 필승 머리띠
+        ctx.fillStyle = '#fde68a';
+        ctx.beginPath();
+        ctx.arc(0, -68, 13, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.arc(0, -71, 13, Math.PI, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(-13, -73, 26, 4);
+
+        ctx.restore();
+      }
+
+      function drawOverlays() {
+        for (var i = 0; i < game.particles.length; i++) {
+          var pt = game.particles[i];
+          ctx.fillStyle = pt.color;
+          ctx.globalAlpha = Math.max(0, pt.life * 2);
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        for (var k = 0; k < game.popups.length; k++) {
+          var pop = game.popups[k];
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, pop.alpha);
+          ctx.font = '900 15px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = 'rgba(15, 23, 42, 0.88)';
+          ctx.strokeText(pop.text, pop.x, pop.y);
+          ctx.fillStyle = pop.color;
+          ctx.fillText(pop.text, pop.x, pop.y);
+          ctx.restore();
+        }
+
+        if (game.warpAlpha > 0) {
+          ctx.fillStyle = 'rgba(125, 211, 252, ' + (game.warpAlpha * 0.45) + ')';
+          ctx.fillRect(0, 0, viewW, viewH);
+        }
+      }
+
+      // ==========================================
+      // 8. 실전 명예의 전당 (더미 데이터 없는 실제 기록 전용)
+      // ==========================================
+      function getRealRanks() {
+        try {
+          var raw = localStorage.getItem(RANK_STORAGE_KEY);
+          if (raw) {
+            var arr = JSON.parse(raw);
+            if (Array.isArray(arr)) return arr;
+          }
+        } catch (e) {}
+        return [];
+      }
+
+      function addRealRank(name, dist, timeSec, grade) {
+        var list = getRealRanks();
+        var clean = (name || '').trim() || '영대 익명 러너';
+        list.push({
+          name: clean,
+          dist: Math.min(GOAL_DIST, Math.floor(dist)),
+          time: Number(timeSec.toFixed(1)),
+          grade: grade
+        });
+        list.sort(function (a, b) {
+          if (b.dist !== a.dist) return b.dist - a.dist;
+          return a.time - b.time;
+        });
+        var top = list.slice(0, 10);
+        try {
+          localStorage.setItem(RANK_STORAGE_KEY, JSON.stringify(top));
+        } catch (e) {}
+        renderHof();
+      }
+
+      function escapeText(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      function renderHof() {
+        var list = getRealRanks();
+        var box = document.getElementById('hof-list');
+        var clearBtn = document.getElementById('clear-rank-btn');
+        box.innerHTML = '';
+
+        if (list.length === 0) {
+          clearBtn.style.display = 'none';
+          var empty = document.createElement('div');
+          empty.className = 'hof-empty';
+          empty.textContent = '아직 등록된 기록이 없습니다. 첫 번째 S학점 주인공이 되어보세요!';
+          box.appendChild(empty);
+          return;
+        }
+
+        clearBtn.style.display = 'inline-block';
+        list.forEach(function (item, idx) {
+          var row = document.createElement('div');
+          row.className = 'hof-item';
+          var badge = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1) + '위';
+          var gCls = 'g-' + item.grade.replace('+', 'p');
+          row.innerHTML =
+            '<span><strong>' + badge + ' ' + escapeText(item.name) + '</strong></span>' +
+            '<span><span class="grade-pill ' + gCls + '" style="font-size:10px;padding:1px 6px;">' + escapeText(item.grade) + '</span> ' +
+            item.dist.toLocaleString() + 'm (' + item.time.toFixed(1) + '초)</span>';
+          box.appendChild(row);
+        });
+      }
+
+      function endGame(cleared) {
+        game.state = 'RESULT';
+        game.cleared = cleared;
+        var finalDist = Math.min(GOAL_DIST, Math.floor(game.distance));
+        var finalGrade = cleared ? 'S' : getGradeData(finalDist).grade;
+
+        var box = document.getElementById('result-box');
+        var stamp = document.getElementById('res-stamp');
+
+        if (cleared) {
+          playSfx('clear');
+          box.classList.add('clear');
+          document.getElementById('res-tag').textContent = '3KM MISSION COMPLETE';
+          document.getElementById('res-title').textContent = '3km 완주! 총장님 S학점 결재!';
+          document.getElementById('res-desc').textContent = '본관 총장실 앞에서 총장님과 만나 전 과목 S학점을 확정받았습니다!';
+          stamp.textContent = '👑 본관 총장실 S학점 확정 결재';
+        } else {
+          box.classList.remove('clear');
+          document.getElementById('res-tag').textContent = 'YEUNGNAM UNIV GRADE REPORT';
+          document.getElementById('res-title').textContent = '주행 종료 · ' + finalGrade + '학점 성적표';
+          document.getElementById('res-desc').textContent = '3,000m 본관 총장실까지 돌파해 S학점 결재에 다시 도전해보세요!';
+          stamp.textContent = '📋 취득 학점: ' + finalGrade + ' (' + finalDist.toLocaleString() + 'm)';
+        }
+
+        document.getElementById('res-grade').textContent = finalGrade;
+        document.getElementById('res-dist').textContent = finalDist.toLocaleString() + 'm';
+        document.getElementById('res-time').textContent = game.time.toFixed(1) + '초';
+
+        document.getElementById('rank-form').style.display = game.rankSaved ? 'none' : 'flex';
+        renderHof();
+        resultModal.classList.remove('hidden');
+      }
+
+      document.getElementById('start-btn').addEventListener('click', function () {
+        initAudio();
+        startGame();
+      });
+
+      document.getElementById('restart-btn').addEventListener('click', function () {
+        initAudio();
+        startGame();
+      });
+
+      document.getElementById('save-rank-btn').addEventListener('click', function () {
+        if (game.rankSaved) return;
+        var val = document.getElementById('nickname-input').value;
+        var finalDist = Math.min(GOAL_DIST, Math.floor(game.distance));
+        var finalGrade = game.cleared ? 'S' : getGradeData(finalDist).grade;
+        addRealRank(val, finalDist, game.time, finalGrade);
+        game.rankSaved = true;
+        document.getElementById('rank-form').style.display = 'none';
+      });
+
+      document.getElementById('clear-rank-btn').addEventListener('click', function () {
+        try {
+          localStorage.removeItem(RANK_STORAGE_KEY);
+        } catch (e) {}
+        renderHof();
+      });
+
+      // ==========================================
+      // 9. 메인 애니메이션 루프 (즉시 배경 렌더링 포함)
+      // ==========================================
+      var prevTime = 0;
+
+      function loop(now) {
+        if (!prevTime) prevTime = now;
+        var dt = Math.min(0.05, (now - prevTime) / 1000);
+        prevTime = now;
+
+        updateGame(dt);
+
+        ctx.clearRect(0, 0, viewW, viewH);
+        drawScene();
+        drawSigns();
+        drawItems();
+        drawObstacles();
+        drawPlayer();
+        drawOverlays();
+
+        requestAnimationFrame(loop);
+      }
+
+      renderHof();
+      requestAnimationFrame(loop);
+    });
+  </script>
+</body>
+</html>
